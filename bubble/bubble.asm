@@ -3,96 +3,100 @@
 .data
 array db 1 , 7 , 5, 2, 3, 6, 4, 9, 8, 10
 array_len equ $-array
-msg1 db 'Original array: $'
-msg2 db 'Sorted array: $'
+msg1 db 'Arreglo original: $'
+msg2 db 'Arreglo ordenado: $'
 space db ' '
 
 .code
 start:
-    mov ax, @data
-    mov ds, ax
+    mov ax, @data                       ; Obtenemos los datos
+    mov ds, ax                          ; Movemos los datos al segmento de datos
 
-    ; print original array
-    mov dx, offset msg1
-    mov ah, 09h
+    mov dx, offset msg1                 ; Imprimimos el primer mensaje con los datos y su respectiva 
+    mov ah, 09h                         ; creamos las interrupciones necesarias para imprimir
     int 21h
-    mov si, offset array
-    mov cx, array_len
+
+    mov si, offset array                ; Impresión del array
+    mov cx, array_len                   ; Obtenemos el tamaño del arreglo
+
 print_original:
-    mov al, [si]          ; Load number into AL
-    call print_number     ; Call subroutine to print the number
-    mov dl, ' '          ; Print a space
+    mov al, [si]                        ; Cargamos el número en AL
+    call print_number                   ; Llamamos a la subrutina para imprimir el número
+    mov dl, ' '                         ; Imprimimos un espacio
     mov ah, 02h
     int 21h
-    inc si                 ; Move to the next number
-    loop print_original
+    inc si                              ; Pasamos al siguiente número
+    loop print_original                 ; Realizamos el loop hasta que terminen todos los números
 
-    ; --- Bubble Sort Implementation ---
-    mov cx, array_len     ; Outer loop counter (number of passes)
+    ; --- Implementación de ordenamiento por burbuja ---
+    mov cx, array_len                   ; Contador de bucle exterior (número de pasadas)
 outer_loop:
-    push cx                ; Save outer loop counter
-    mov si, offset array   ; Point to the beginning of the array
-    mov cx, array_len - 1 ; Inner loop counter (comparisons in a pass)
+    push cx                             ; Guardamos el contador de bucle exterior
+    mov si, offset array                ; Apuntamos al principio del arreglo
+    mov cx, array_len - 1               ; Contador de bucle interior (comparaciones en una pasada)
 
 inner_loop:
-    mov al, [si]           ; Load current element
-    cmp al, [si+1]        ; Compare with the next element
-    jle no_swap           ; Jump if in order (less than or equal)
+    mov al, [si]                        ; Cargamos el elemento actual
+    
+    ; if curr_pos <= nex_pos
+    cmp al, [si+1]                      ; Comparamos con el elemento siguiente
+    jle no_swap                         ; Saltamos si está en orden (menor o igual)
 
-    ; Swap elements
-    xchg al, [si+1]        ; Exchange values directly in memory
-    mov [si], al           ; 
+
+    ; else: Intercambiamos elementos
+    xchg al, [si+1]                     ; cambiamos el dato dentro de la siguiente posición
+    mov [si], al                        ; colocamos el dato de al dentro de si
 
 no_swap:
-    inc si                  ; Move to the next pair
-    loop inner_loop
+    inc si                              ; Pasamos a la siguiente pareja
+    loop inner_loop                     ; Realizamos el loop hasta que terminen todos los números
 
-    pop cx                 ; Restore outer loop counter
-    loop outer_loop
+    pop cx                              ; Restauramos el contador de bucle exterior
+    loop outer_loop                     ; Realizamos el loop hasta que terminen todos los números
 
-    ; --- End of Bubble Sort ---
+    ; --- Fin de ordenamiento por burbuja ---
 
-    ; print sorted array
-    mov dx, offset msg2
-    mov ah, 09h
+    ; Imprimimos el arreglo ordenado
+    mov dx, offset msg2                 ; Mostramos el segundo mensaje ya ordenado
+    mov ah, 09h                         ; creamos las interrupciones necesarias para imprimir
     int 21h
-    mov si, offset array
-    mov cx, array_len
+    mov si, offset array                ; mostramos el arreglo ya ordenado
+    mov cx, array_len                   ; actualizamos el tamaño
 print_sorted:
-    mov al, [si]          ; Load number into AL
-    call print_number     ; Call subroutine to print the number
-    mov dl, ' '          ; Print a space
-    mov ah, 02h
+    mov al, [si]                        ; Cargamos el número en AL
+    call print_number                   ; Llamamos a la subrutina para imprimir el número
+    mov dl, ' '                         ; Imprimimos un espacio
+    mov ah, 02h                         ; Interrupciones necesarias para imprimir el espacio
     int 21h
-    inc si                 ; Move to the next number
-    loop print_sorted
+    inc si                              ; Pasamos al siguiente número
+    loop print_sorted                   ; Realizamos el loop hasta que terminen todos los números
 
-    ; exit program
+    ; Salimos del programa
     mov ah, 4Ch
     int 21h
 
-; Subroutine to print a number in AL
+; Subrutina para imprimir un número en AL
 print_number:
     push ax
     push bx
     push cx
     push dx
 
-    mov ah, 0   ; Clear AH for division
-    mov bl, 10  ; Base 10
-    xor cx, cx  ; Digit counter = 0
+    mov ah, 0                            ; Limpiamos AH para la división
+    mov bl, 10                           ; Base 10
+    xor cx, cx                           ; Contador de dígitos = 0
 
 convert_loop:
-    div bl       ; Divide AX by 10
-    push ax      ; Save AX on the stack
-    inc cx      ; Increment digit counter
-    cmp al, 0   ; Check if quotient is zero
+    div bl                               ; Dividimos AX entre 10
+    push ax                              ; Guardamos AX en la pila
+    inc cx                               ; Incrementamos el contador de dígitos
+    cmp al, 0                            ; Verificamos si el cociente es cero
     jne convert_loop
 
 print_digits:
-    pop ax      ; Get digit from stack
-    add ah, '0' ; Convert to ASCII
-    mov dl, ah  ; Prepare for printing
+    pop ax                               ; Obtenemos el dígito de la pila
+    add ah, '0'                          ; Convertimos a ASCII
+    mov dl, ah                           ; Preparamos para imprimir
     mov ah, 02h
     int 21h
     loop print_digits
